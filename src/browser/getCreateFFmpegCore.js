@@ -4,19 +4,6 @@ import {
   CREATE_FFMPEG_CORE_IS_NOT_DEFINED,
 } from '../utils/errors';
 
-/*
- * Fetch data from remote URL and convert to blob URL
- * to avoid CORS issue
- */
-const toBlobURL = async (url, mimeType) => {
-  log('info', `fetch ${url}`);
-  const buf = await (await fetch(url)).arrayBuffer();
-  log('info', `${url} file size = ${buf.byteLength} bytes`);
-  const blob = new Blob([buf], { type: mimeType });
-  const blobURL = URL.createObjectURL(blob);
-  log('info', `${url} blob URL = ${blobURL}`);
-  return blobURL;
-};
 
 // eslint-disable-next-line
 export const getCreateFFmpegCore = async ({
@@ -31,18 +18,11 @@ export const getCreateFFmpegCore = async ({
       throw Error('corePath should be a string!');
     }
     const coreRemotePath = new URL(_corePath, import.meta.url).href;
-    const corePath = await toBlobURL(
-      coreRemotePath,
-      'application/javascript',
-    );
-    const wasmPath = await toBlobURL(
-      _wasmPath !== undefined ? _wasmPath : coreRemotePath.replace('ffmpeg-core.js', 'ffmpeg-core.wasm'),
-      'application/wasm',
-    );
-    const workerPath = await toBlobURL(
-      _workerPath !== undefined ? _workerPath : coreRemotePath.replace('ffmpeg-core.js', 'ffmpeg-core.worker.js'),
-      'application/javascript',
-    );
+
+    const corePath = coreRemotePath;
+    const wasmPath = _wasmPath !== undefined ? _wasmPath : coreRemotePath.replace('ffmpeg-core.js', 'ffmpeg-core.wasm');
+    const workerPath = _workerPath !== undefined ? _workerPath : coreRemotePath.replace('ffmpeg-core.js', 'ffmpeg-core.worker.js');
+
     if (typeof createFFmpegCore === 'undefined') {
       return new Promise((resolve) => {
         globalThis.importScripts(corePath);
@@ -70,18 +50,9 @@ export const getCreateFFmpegCore = async ({
     throw Error('corePath should be a string!');
   }
   const coreRemotePath = new URL(_corePath, import.meta.url).href;
-  const corePath = await toBlobURL(
-    coreRemotePath,
-    'application/javascript',
-  );
-  const wasmPath = await toBlobURL(
-    _wasmPath !== undefined ? _wasmPath : coreRemotePath.replace('ffmpeg-core.js', 'ffmpeg-core.wasm'),
-    'application/wasm',
-  );
-  const workerPath = await toBlobURL(
-    _workerPath !== undefined ? _workerPath : coreRemotePath.replace('ffmpeg-core.js', 'ffmpeg-core.worker.js'),
-    'application/javascript',
-  );
+  const corePath = coreRemotePath
+  const wasmPath = _wasmPath !== undefined ? _wasmPath : coreRemotePath.replace('ffmpeg-core.js', 'ffmpeg-core.wasm');
+  const workerPath = _workerPath !== undefined ? _workerPath : coreRemotePath.replace('ffmpeg-core.js', 'ffmpeg-core.worker.js');
   if (typeof createFFmpegCore === 'undefined') {
     return new Promise((resolve) => {
       const script = document.createElement('script');
